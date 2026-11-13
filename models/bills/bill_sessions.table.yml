@@ -1,0 +1,105 @@
+schema: bills
+name: bill_sessions
+title: 議案の審議経過（国会回次ごと）
+description: |-
+  衆議院ホームページの「議案」に載っている議案の審議経過です。1 行が、1 つの国会で審議した 1 件の議案です。第142回国会（1998 年）から収録しています。
+
+  - 前の国会から継続審査になった議案は、審議した国会ごとに 1 行ずつあります。議案ごとの最新の経過は bills.bills にあります
+  - 修正案は番号（bill_number）が NULL の行です
+  - 委員会の名前は「委員会」を除いた書き方です（例 財務金融、政治改革に関する特別）。会議録 ndl.kokkai.meetings の meeting_name と結合するときは「委員会」を付けます
+  - 表の中で空の項目は、衆議院ホームページで未登録か、情報が無いことが確定したものです
+primary_key: [session, keika_id]
+sources:
+  - path: https://www.shugiin.go.jp/internet/itdb_gian.nsf/html/gian/menu.htm
+fields:
+  - name: session
+    title: 国会回次
+    description: この行の経過を審議した国会の回次
+  - name: keika_id
+    title: 経過情報の ID
+    description: 衆議院ホームページの経過のページのファイル名
+  - name: bill_type
+    title: 議案種類
+    description: 衆法・参法・閣法・予算・条約・承認・承諾・決算・国有財産・国庫債務・ＮＨＫ決算・決議・規則・規程・議決
+  - name: submitted_session
+    title: 提出回次
+    description: 議案を提出した国会の回次
+  - name: bill_number
+    title: 議案番号
+    description: 提出回次と議案種類ごとの番号。承諾・決算などと修正案は NULL
+  - name: title
+    title: 議案件名
+  - name: status
+    title: 審議状況
+    description: この国会での審議状況（例 成立、未了、撤回、衆議院で閉会中審査）
+  - name: submitter
+    title: 議案提出者
+    description: 例 内閣、○○君外九名
+  - name: submitter_groups
+    title: 議案提出会派
+  - name: submitters
+    title: 議案提出者一覧
+  - name: shu_preliminary_received_date
+    title: 衆議院予備審査議案受理年月日
+  - name: shu_preliminary_referred_date
+    title: 衆議院予備付託年月日
+  - name: shu_preliminary_committee
+    title: 衆議院予備付託委員会
+  - name: shu_received_date
+    title: 衆議院議案受理年月日
+  - name: shu_referred_date
+    title: 衆議院付託年月日
+  - name: shu_committee
+    title: 衆議院付託委員会
+    description: 委員会の審査を省略したときは「審査省略」
+  - name: shu_committee_decided_date
+    title: 衆議院審査終了年月日
+  - name: shu_committee_result
+    title: 衆議院審査結果
+    description: 例 可決、修正、否決、審査未了
+  - name: shu_plenary_decided_date
+    title: 衆議院審議終了年月日
+  - name: shu_plenary_result
+    title: 衆議院審議結果
+    description: 例 可決、修正、否決、閉会中審査
+  - name: shu_vote
+    title: 衆議院審議時会派態度
+    description: 例 全会一致、多数
+  - name: shu_yes_groups
+    title: 衆議院審議時賛成会派
+  - name: shu_no_groups
+    title: 衆議院審議時反対会派
+  - name: san_preliminary_received_date
+    title: 参議院予備審査議案受理年月日
+  - name: san_preliminary_referred_date
+    title: 参議院予備付託年月日
+  - name: san_preliminary_committee
+    title: 参議院予備付託委員会
+  - name: san_received_date
+    title: 参議院議案受理年月日
+  - name: san_referred_date
+    title: 参議院付託年月日
+  - name: san_committee
+    title: 参議院付託委員会
+  - name: san_committee_decided_date
+    title: 参議院審査終了年月日
+  - name: san_committee_result
+    title: 参議院審査結果
+  - name: san_plenary_decided_date
+    title: 参議院審議終了年月日
+  - name: san_plenary_result
+    title: 参議院審議結果
+  - name: promulgated_date
+    title: 公布年月日
+  - name: law_number
+    title: 法律番号
+    description: 公布された年の法律の番号
+  - name: law_num
+    title: 法令番号
+    description: 例 令和七年法律第十三号。e-Gov 法令検索と同じ書き方で、新しく制定した法律は e_gov.laws.laws の law_num、ほかの法律を改正する法律は e_gov.laws.revisions の amendment_law_num と結合できます
+  - name: keika_url
+    title: 経過情報の URL
+  - name: honbun_url
+    title: 本文情報の URL
+  - name: fetched_at
+    title: 取得日時

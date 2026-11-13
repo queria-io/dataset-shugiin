@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: bill_sessions
+    columns:
+      - name: session
+        data_tests: [not_null]
+      - name: keika_id
+        data_tests: [not_null]
+      - name: bill_type
+        data_tests: [not_null]
+      - name: title
+        data_tests: [not_null]
+  - name: bills
+    columns:
+      - name: law_num
+        data_tests: [unique]

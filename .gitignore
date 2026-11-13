@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# dbt
+target/
+dbt_packages/
+dbt_internal_packages/
+logs/
+*.log
+.user.yml
+package-lock.yml
+
+# DuckLake
+.queria/
+
+
+# Environment
+.env
+dist/
+
+.fdl/
+
+# 取得した議案 (毎回取り直すのでコミットしない)
+data/

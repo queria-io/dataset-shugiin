@@ -1,0 +1,29 @@
+name: Sync
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "*.md"
+  schedule:
+    # 新しい 3 回分の国会の経過を毎週月曜 04:00 JST に取得し直す
+    - cron: "0 19 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    # Queria への書き込みは GitHub Actions の OIDC で 1 時間のトークンを取って行う
+    permissions:
+      contents: read
+      id-token: write
+    uses: queria-io/dataset-shared/.github/workflows/sync.yml@47c67df0f7731174b0999ead76873c53b8905ca2
+    with:
+      dataset_name: shugiin
+      # 初回は 100 分（GIAN_MAX_MINUTES）を超えたら取得し終えた国会回次までで止め、残りは次の回に取得する
+      timeout_minutes: 150
+    secrets:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
