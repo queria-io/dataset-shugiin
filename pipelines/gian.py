@@ -10,10 +10,7 @@
 （読み取りの規則を直したときに、古い回次へ反映するため）。経過のページが 404 の議案は、
 一覧の項目だけを書く。
 
-本文情報のある議案は、本文情報の一覧から提出時法律案・要綱・修正案のページをたどり、
-本文を手を加えずにテキストにして書く（決議案は本文のページが直接ある）。
-
-出力: data/gian/<回次>.ndjson.gz（議案）、data/gian/texts/<回次>.ndjson.gz（本文）
+出力: data/gian/<回次>.ndjson.gz
 
 データソース: 衆議院ホームページ 議案情報
 https://www.shugiin.go.jp/internet/itdb_gian.nsf/html/gian/menu.htm
@@ -147,74 +144,6 @@ def keika_fields(html: str) -> dict:
     }
 
 
-def document_links(index: str) -> list[tuple[str, str]]:
-    """本文情報の一覧のページから、（見出し, honbun/ からのパス）を返す。"""
-    return [
-        (text(label), href)
-        for href, label in re.findall(r'<a href="\./((?:houan|youkou|syuuseian)/[^"]+)"[^>]*>(.*?)</a>', index, re.S | re.I)
-    ]
-
-
-# 本文のページの置き場所 → 本文の種類
-DOCUMENT_KINDS = {"houan": "提出時法律案", "youkou": "要綱", "syuuseian": "修正案", "ketsugian": "決議案"}
-
-
-def document_kind(path: str) -> str:
-    """honbun/ の下のフォルダから本文の種類を決める（見出しの書き方は回次で違うため）。"""
-    return DOCUMENT_KINDS[path.split("/")[-2]]
-
-
-def body_text(html: str) -> str:
-    """本文のページから、見出しの後ろからフッターの前までを、改行を残したテキストにする。
-
-    表（給与表など）は 1 行を 1 行に、セルをタブで区切る。行末の半角の空白と空の行だけを除き、
-    全角の空白は残す。
-    """
-    main = re.search(r'id="TopContents"(.*?)<div id="FooterBlock"', html, re.S | re.I)
-    body = (main.group(1) if main else "").split(">", 1)[-1]
-    rows = re.sub(
-        r"<tr[^>]*>(.*?)</tr>",
-        lambda tr: "\t".join(text(td) for td in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", tr.group(1), re.S | re.I)) + "\n",
-        body, flags=re.S | re.I,
-    )
-    lines = re.sub(r"<br[^>]*>|</p>|</h\d>", "\n", rows, flags=re.I)
-    plain = unescape(re.sub(r"<[^>]+>", "", lines))
-    return "\n".join(line.rstrip(" \t") for line in plain.splitlines() if line.strip(" \t\r"))
-
-
-def documents(row: dict, published: set[str]) -> list[dict]:
-    """1 件の議案の本文のページを取得する。本文情報が無い議案は空。
-
-    本文は提出後に変わらないので、公開中の bills.texts にある本文のページ（published）は取得しない。
-    """
-    path = (row["honbun_url"] or "").removeprefix(BASE)
-    if not path:
-        return []
-    resolution = "/ketsugian/" in path
-    pages = (
-        [(row["title"], path)] if resolution
-        else [(label, "honbun/" + href) for label, href in document_links(get(path, not_found_ok=True) or "")]
-    )
-    return [
-        {
-            "bill_type": row["bill_type"], "submitted_session": row["submitted_session"],
-            "bill_number": row["bill_number"], "document_kind": document_kind(href),
-            "document_title": label, "text": body, "text_url": BASE + href, "honbun_url": row["honbun_url"],
-        }
-        for label, href in pages
-        if BASE + href not in published
-        if (page := get(href, not_found_ok=True)) and (body := page_text(href, page))
-    ]
-
-
-def page_text(href: str, page: str) -> str:
-    """本文のページのテキスト。見出しかフッターが見つからず空になったページは書かない。"""
-    body = body_text(page)
-    if not body:
-        logger.warning("  本文が読めない（ページの形が変わった？）: %s", BASE + href)
-    return body
-
-
 def law_num(promulgated: str | None, number: str | None) -> str | None:
     """公布日と法律番号から、e-Gov 法令検索と同じ書き方の法令番号（例 令和七年法律第十三号）を作る。"""
     era = re.match(r"(昭和|平成|令和)\s*(\d+)年", promulgated or "")
@@ -239,39 +168,23 @@ def split(raw: str, n: int) -> list[str]:
     return (parts + [""] * n)[:n]
 
 
-def published() -> tuple[set[int], set[str]]:
-    """公開中の bills.bill_sessions にあり本文も取得済みの国会回次と、公開中の本文の URL。
-    FDL_WORKING が無いか、表がまだ無ければ空。
-
-    本文情報のある議案があるのに bills.texts に本文が 1 件も無い回次は、本文を取得する前に
-    公開した回次なので、取得し直す。
-    """
+def published_sessions() -> set[int]:
+    """公開中の bills.bill_sessions にある国会回次。FDL_WORKING が無いか、表がまだ無ければ空。"""
     working = os.environ.get("FDL_WORKING")
     if not working:
-        return set(), set()
+        return set()
     import duckdb
 
     con = duckdb.connect(config={"custom_user_agent": os.environ.get("QUERIA_USER_AGENT", "")})
     con.execute("INSTALL ducklake; LOAD ducklake; INSTALL httpfs; LOAD httpfs;")
     con.execute(f"ATTACH 'ducklake:{working.replace(chr(39), chr(39) * 2)}' AS previous (READ_ONLY, META_TYPE 'sqlite')")
     try:
-        sessions = {row[0] for row in con.sql(PUBLISHED_SESSIONS).fetchall()}
-        texts = {row[0] for row in con.sql("select text_url from previous.bills.texts").fetchall()}
-        return sessions, texts
+        return {row[0] for row in con.sql("select distinct session from previous.bills.bill_sessions").fetchall()}
     except duckdb.CatalogException as error:
         logger.info("  公開中の表が無い: %s", error)
-        return set(), set()
+        return set()
     finally:
         con.close()
-
-
-PUBLISHED_SESSIONS = """
-select s.session
-from previous.bills.bill_sessions as s
-left join (select distinct honbun_url from previous.bills.texts) as t on t.honbun_url = s.honbun_url
-group by s.session
-having count(s.honbun_url) = 0 or count(t.honbun_url) > 0
-"""
 
 
 def sessions_to_fetch(available: list[int], published: set[int], has_catalog: bool) -> list[int]:
@@ -282,7 +195,7 @@ def sessions_to_fetch(available: list[int], published: set[int], has_catalog: bo
     return [s for i, s in enumerate(newest) if i < RECENT_SESSIONS or s not in published]
 
 
-def fetch_session(session: int, fetched_at: str, output: Path, seen: set[str], published_texts: set[str]) -> int:
+def fetch_session(session: int, fetched_at: str, output: Path) -> int:
     rows = [
         {**row, **fields, "law_num": law_num(fields.get("promulgated"), fields.get("law_number")), "fetched_at": fetched_at}
         for row in list_rows(get(f"kaiji{session}.htm"), session)
@@ -291,35 +204,23 @@ def fetch_session(session: int, fetched_at: str, output: Path, seen: set[str], p
     ]
     if not rows:
         raise SystemExit(f"第{session}回国会の一覧に議案が無い（ページの形が変わった？）")
-    # 継続審査の議案は前の国会と同じ本文のページを指すので、本文情報の URL ごとに 1 回だけ取得する。
-    # seen はこの取得で先に（新しい国会で）取得した本文情報の URL
-    unique = {row["honbun_url"]: row for row in rows if row["honbun_url"] and row["honbun_url"] not in seen}
-    seen.update(unique)
-    texts = [{**doc, "fetched_at": fetched_at} for row in unique.values() for doc in documents(row, published_texts)]
-    write(output / f"{session}.ndjson.gz", rows)
-    write(output / "texts" / f"{session}.ndjson.gz", texts)
-    logger.info("  第%d回国会: %d 件、本文 %d 件", session, len(rows), len(texts))
-    return len(rows)
-
-
-def write(path: Path, rows: list[dict]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with replacing(path) as partial, gzip.open(partial, "wt", encoding="utf-8") as f:
+    with replacing(output / f"{session}.ndjson.gz") as partial, gzip.open(partial, "wt", encoding="utf-8") as f:
         f.writelines(json.dumps(row, ensure_ascii=False) + "\n" for row in rows)
+    logger.info("  第%d回国会: %d 件", session, len(rows))
+    return len(rows)
 
 
 def download_gian(output: Path = OUTPUT) -> int:
     has_catalog = bool(os.environ.get("FDL_WORKING"))
-    published_sessions, published_texts = (set(), set()) if REFETCH else published()
-    targets = sessions_to_fetch(sessions(get("pulldown.htm")), published_sessions, has_catalog)
+    published = set() if REFETCH else published_sessions()
+    targets = sessions_to_fetch(sessions(get("pulldown.htm")), published, has_catalog)
     logger.info("  取得する国会回次: %s", targets)
     output.mkdir(parents=True, exist_ok=True)
     fetched_at = datetime.now(UTC).isoformat()
     deadline = time.monotonic() + MAX_MINUTES * 60
     total = 0
-    seen: set[str] = set()
     for session in targets:
-        total += fetch_session(session, fetched_at, output, seen, published_texts)
+        total += fetch_session(session, fetched_at, output)
         if time.monotonic() > deadline:
             # 取得し終えた回次までを公開し、次のビルドで残りの回次を取得する
             logger.info("  %d 分を超えたので第%d回国会までで止める", MAX_MINUTES, session)

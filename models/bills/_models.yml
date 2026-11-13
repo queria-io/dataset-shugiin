@@ -15,14 +15,3 @@ models:
     columns:
       - name: law_num
         data_tests: [unique]
-  - name: texts
-    columns:
-      - name: text_url
-        data_tests: [not_null]
-      - name: bill_number
-        data_tests: [not_null]
-      - name: document_kind
-        data_tests:
-          - accepted_values:
-              arguments:
-                values: [提出時法律案, 要綱, 修正案, 決議案]

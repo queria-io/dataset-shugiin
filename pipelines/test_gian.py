@@ -1,6 +1,6 @@
 import unittest
 
-from pipelines.gian import body_text, document_kind, document_links, keika_fields, kanji, law_num, list_rows, sessions, sessions_to_fetch
+from pipelines.gian import keika_fields, kanji, law_num, list_rows, sessions, sessions_to_fetch
 
 LIST = """
 <table><caption class="txt04b">閣法の一覧</caption>
@@ -75,37 +75,6 @@ class SessionsTest(unittest.TestCase):
         published = set(range(142, 220)) - {150}
         self.assertEqual(sessions_to_fetch(available, published, True), [222, 221, 220, 150])
         self.assertEqual(sessions_to_fetch(available, set(), False), [222])
-
-
-INDEX = """
-<ul><li><A HREF="./houan/g21709001.htm" tabindex="1">
-提出時法律案</A>
-<li><A HREF="./syuuseian/15_902.htm" tabindex="3">
-修正案2：第217回提出(可決)</A>
-<li><A HREF="./youkou/g21709001.htm">[要綱]</A></ul>
-"""
-
-BODY = """<div id="breadcrumb">議案情報</div>
-<H2 id="TopContents" tabindex="200"></H2><div class=WordSection1>
-<p class=MsoNormal>　　　政治資金規正法の一部を改正する法律案</p>
-<p class=MsoNormal>　第二十一条第一項中「&#12300;以下」に改め<br>る。</p>
-</div><DIV id="FooterBlock">ホームページについて</DIV>"""
-
-
-class DocumentsTest(unittest.TestCase):
-    def test_reads_index(self):
-        links = document_links(INDEX)
-        self.assertEqual([href for _, href in links], ["houan/g21709001.htm", "syuuseian/15_902.htm", "youkou/g21709001.htm"])
-        self.assertEqual([document_kind(href) for _, href in links], ["提出時法律案", "修正案", "要綱"])
-        self.assertEqual(document_kind("honbun/ketsugian/g14217001.htm"), "決議案")
-
-    def test_body_keeps_lines_and_drops_header_and_footer(self):
-        self.assertEqual(body_text(BODY), "　　　政治資金規正法の一部を改正する法律案\n　第二十一条第一項中「「以下」に改め\nる。")
-
-
-    def test_body_keeps_table_rows(self):
-        table = '<H2 id="TopContents"></H2><table><tr><td><p>一級</p></td><td><p>205,300</p></td></tr><tr><td>二級</td><td>250,000</td></tr></table><div id="FooterBlock">'
-        self.assertEqual(body_text(table), "一級\t205,300\n二級\t250,000")
 
 
 if __name__ == "__main__":
