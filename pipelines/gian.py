@@ -40,8 +40,8 @@ RECENT_SESSIONS = 3
 # Sync の timeout_minutes (150) から dbt build と fdl commit・push の時間を引いた残り
 MAX_MINUTES = int(os.environ.get("GIAN_MAX_MINUTES", "100"))
 REFETCH = os.environ.get("GIAN_REFETCH") == "1"
-# 1 ページずつ間を空ける
-INTERVAL_SECONDS = 1.0
+# サイトに負荷をかけないよう、1 ページずつ 2 秒空ける
+INTERVAL_SECONDS = 2.0
 
 # 一覧の表の見出し → 議案種類。「決算その他」は行の先頭の列が種類
 KINDS = {
