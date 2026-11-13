@@ -14,7 +14,7 @@
 
 - 議案は議案種類（`bill_type`）・提出回次（`submitted_session`）・議案番号（`bill_number`）で 1 件に決まります。番号の無い承諾・決算などと修正案は `bills.bill_sessions` だけにあります
 - 成立した法律は `law_num`（例 令和七年法律第十三号）で e-Gov 法令検索のデータセットと結合できます。新しく制定した法律は `e_gov.laws.laws` の `law_num`、ほかの法律を改正する法律は `e_gov.laws.revisions` の `amendment_law_num` です
-- 委員会の名前は「委員会」を除いた書き方です（例 財務金融）。会議録 `ndl.kokkai.meetings` と結合するときは「委員会」を付けます
+- 委員会の名前は「委員会」を除いた書き方です（例 財務金融）。会議録 `kokkai.minutes.meetings` と結合するときは「委員会」を付けます
 - 本文は衆議院ホームページの表記のまま、改行を残したテキストにしています（表はセルをタブで区切ります）。予算・条約などの本文情報が無い議案は `bills.texts` にありません
 - 毎週、新しい 3 回分の国会の一覧と経過を取得し直します。それより前の国会は、まだ取得していない回次だけを取得します
 
@@ -54,7 +54,7 @@ ORDER BY b.submitted_session DESC;
 ```sql
 SELECT b.title, m.date, m.meeting_name, m.meeting_url
 FROM shugiin.bills.bill_sessions AS b
-JOIN ndl.kokkai.meetings AS m
+JOIN kokkai.minutes.meetings AS m
   ON m.session = b.session
  AND m.house = '衆議院'
  AND m.meeting_name = b.shu_committee || '委員会'
