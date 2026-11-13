@@ -6,7 +6,7 @@ description: |-
 
   - 前の国会から継続審査になった議案は、審議した国会ごとに 1 行ずつあります。議案ごとの最新の経過は bills.bills にあります
   - 修正案は番号（bill_number）が NULL の行です
-  - 委員会の名前は「委員会」を除いた書き方です（例 財務金融、政治改革に関する特別）。会議録 ndl.kokkai.meetings の meeting_name と結合するときは「委員会」を付けます
+  - 委員会の名前は「委員会」を除いた書き方です（例 財務金融、政治改革に関する特別）。会議録 kokkai.minutes.meetings の meeting_name と結合するときは「委員会」を付けます
   - 表の中で空の項目は、衆議院ホームページで未登録か、情報が無いことが確定したものです
 primary_key: [session, keika_id]
 sources:
