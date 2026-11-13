@@ -1,0 +1,24 @@
+name: Build
+
+# 公開せずに最新の国会回次の取得と dbt build だけを回す。ページの形が変わったときに Sync より先に気づくため
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+      - uses: astral-sh/setup-uv@v7
+      - run: uv sync
+      - run: uv run python -m unittest pipelines.test_gian
+      - run: uv run python -c "import main; main.download()"
+      - run: uv run dbt build --profiles-dir ci

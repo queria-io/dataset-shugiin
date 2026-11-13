@@ -1,0 +1,17 @@
+name: "shugiin"
+version: "1.0.0"
+
+profile: "shugiin"
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros", "shared/macros"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  shugiin:
+    +database: shugiin
+    +materialized: table
