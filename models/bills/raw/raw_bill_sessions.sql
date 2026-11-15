@@ -1,5 +1,4 @@
-{# 取得した議案 (data/gian/*.ndjson.gz) を型を付けて読む #}
-{{ config(materialized='ephemeral') }}
+{# 取得した議案 (data/gian/*.ndjson.gz)。pipelines が書いた項目をそのまま読む。日付は和暦の文字列のまま #}
 
 select *
 from read_json(
