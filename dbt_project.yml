@@ -15,3 +15,9 @@ models:
   shugiin:
     +database: shugiin
     +materialized: table
+    # raw は取得したまま、stg は型付けと重複の除外。どちらも mart の SQL に展開し、テーブルは作らない
+    bills:
+      raw:
+        +materialized: ephemeral
+      stg:
+        +materialized: ephemeral
