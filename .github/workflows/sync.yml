@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: queria-io/dataset-shared/.github/workflows/sync.yml@edbdd63b943b44f13b190422440d825932cf15d5
+    uses: queria-io/dataset-shared/.github/workflows/sync.yml@1533eaf8bb592c9f30505f04709f4eb9e7903b6e
     with:
       dataset_name: shugiin
       # 初回は 100 分（GIAN_MAX_MINUTES）を超えたら取得し終えた国会回次までで止め、残りは次の回に取得する
