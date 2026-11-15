@@ -25,6 +25,7 @@ import logging
 import os
 import re
 import time
+from contextlib import closing
 from datetime import UTC, datetime
 from html import unescape
 from pathlib import Path
@@ -253,7 +254,12 @@ def published() -> tuple[set[int], set[str]]:
 
     con = duckdb.connect(config={"custom_user_agent": os.environ.get("QUERIA_USER_AGENT", "")})
     con.execute("INSTALL ducklake; LOAD ducklake; INSTALL httpfs; LOAD httpfs; INSTALL aws; LOAD aws;")
-    con.execute(attach_previous(working, os.environ.get("FDL_DATA_PATH")))
+    data_path = os.environ.get("FDL_DATA_PATH")
+    if not (data_path and "://" in data_path):
+        secret = token_secret(catalog_data_path(working))
+        if secret:
+            con.execute(secret)
+    con.execute(attach_previous(working, data_path))
     try:
         sessions = {row[0] for row in con.sql(PUBLISHED_SESSIONS).fetchall()}
         texts = {row[0] for row in con.sql("select text_url from previous.bills.texts").fetchall()}
@@ -269,7 +275,8 @@ def attach_previous(working: str, data_path: str | None) -> str:
     """公開中のカタログを読む ATTACH。データファイルは dbt と同じ FDL_DATA_PATH から読む。
     カタログの data_path は data.queria.io なので、非公開のデータセットは認証なしでは読めない。
     FDL_DATA_PATH がストレージ (s3://) なら、build-fdl.sh が作った DuckDB のシークレットで読める。
-    手元のフォルダ (ストレージの鍵が無いとき) には新しいファイルしか無いので、カタログの data_path のまま読む。
+    手元のフォルダ (ストレージの鍵が無いとき) には新しいファイルしか無いので、カタログの data_path を
+    token_secret のシークレットで読む。
     """
     def quoted(value: str) -> str:
         return "'" + value.replace("'", "''") + "'"
@@ -278,6 +285,34 @@ def attach_previous(working: str, data_path: str | None) -> str:
     if data_path and "://" in data_path:
         options += [f"DATA_PATH {quoted(data_path)}", "OVERRIDE_DATA_PATH true"]
     return f"ATTACH {quoted('ducklake:' + working)} AS previous ({', '.join(options)})"
+
+
+def catalog_data_path(working: str) -> str:
+    """作業場のカタログ (SQLite) に書かれた、公開中のデータファイルの場所。"""
+    import sqlite3
+
+    with closing(sqlite3.connect(working)) as con:
+        row = con.execute("select value from ducklake_metadata where key = 'data_path'").fetchone()
+    return row[0] if row else ""
+
+
+def token_secret(data_path: str) -> str | None:
+    """data.queria.io のデータファイルを Queria のトークンで読む DuckDB のシークレット。
+    非公開のデータセットは、トークンが無いと 404 になる。トークンは fdl と同じ方法で取る
+    (FDL_TOKEN か、fdl の設定のクレデンシャルヘルパー。GitHub Actions では OIDC で取った 1 時間のトークン)。
+    """
+    if not data_path.startswith("https://"):
+        return None
+    from fdl.stores import credentials_for
+
+    token = credentials_for(data_path)
+    if not token:
+        return None
+
+    def quoted(value: str) -> str:
+        return "'" + value.replace("'", "''") + "'"
+
+    return f"CREATE SECRET previous_data (TYPE http, BEARER_TOKEN {quoted(token)}, SCOPE {quoted(data_path)})"
 
 
 PUBLISHED_SESSIONS = """
