@@ -1,6 +1,11 @@
+import os
+import sqlite3
+import tempfile
 import unittest
+from contextlib import closing
+from unittest import mock
 
-from pipelines.gian import attach_previous, body_text, document_kind, document_links, keika_fields, kanji, law_num, list_rows, sessions, sessions_to_fetch
+from pipelines.gian import attach_previous, body_text, catalog_data_path, token_secret, document_kind, document_links, keika_fields, kanji, law_num, list_rows, sessions, sessions_to_fetch
 
 LIST = """
 <table><caption class="txt04b">閣法の一覧</caption>
@@ -120,3 +125,27 @@ class AttachPreviousTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TokenSecretTest(unittest.TestCase):
+    def test_reads_data_queria_io_with_the_token(self):
+        with mock.patch.dict(os.environ, {"FDL_TOKEN": "t'k"}):
+            sql = token_secret("https://data.queria.io/datasets/queria/shugiin/ducklake.duckdb.files/")
+        self.assertEqual(
+            sql,
+            "CREATE SECRET previous_data (TYPE http, BEARER_TOKEN 't''k', "
+            "SCOPE 'https://data.queria.io/datasets/queria/shugiin/ducklake.duckdb.files/')",
+        )
+
+    def test_none_for_local_files(self):
+        self.assertIsNone(token_secret("/tmp/data/"))
+
+    def test_catalog_data_path(self):
+        with tempfile.TemporaryDirectory() as folder:
+            working = f"{folder}/work.sqlite"
+            with closing(sqlite3.connect(working)) as con:
+                con.execute("create table ducklake_metadata (key text, value text)")
+                con.execute("insert into ducklake_metadata values ('data_path', 'https://example.invalid/files/')")
+                con.commit()
+            self.assertEqual(catalog_data_path(working), "https://example.invalid/files/")
+
