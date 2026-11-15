@@ -252,8 +252,8 @@ def published() -> tuple[set[int], set[str]]:
     import duckdb
 
     con = duckdb.connect(config={"custom_user_agent": os.environ.get("QUERIA_USER_AGENT", "")})
-    con.execute("INSTALL ducklake; LOAD ducklake; INSTALL httpfs; LOAD httpfs;")
-    con.execute(f"ATTACH 'ducklake:{working.replace(chr(39), chr(39) * 2)}' AS previous (READ_ONLY, META_TYPE 'sqlite')")
+    con.execute("INSTALL ducklake; LOAD ducklake; INSTALL httpfs; LOAD httpfs; INSTALL aws; LOAD aws;")
+    con.execute(attach_previous(working, os.environ.get("FDL_DATA_PATH")))
     try:
         sessions = {row[0] for row in con.sql(PUBLISHED_SESSIONS).fetchall()}
         texts = {row[0] for row in con.sql("select text_url from previous.bills.texts").fetchall()}
@@ -263,6 +263,21 @@ def published() -> tuple[set[int], set[str]]:
         return set(), set()
     finally:
         con.close()
+
+
+def attach_previous(working: str, data_path: str | None) -> str:
+    """公開中のカタログを読む ATTACH。データファイルは dbt と同じ FDL_DATA_PATH から読む。
+    カタログの data_path は data.queria.io なので、非公開のデータセットは認証なしでは読めない。
+    FDL_DATA_PATH がストレージ (s3://) なら、build-fdl.sh が作った DuckDB のシークレットで読める。
+    手元のフォルダ (ストレージの鍵が無いとき) には新しいファイルしか無いので、カタログの data_path のまま読む。
+    """
+    def quoted(value: str) -> str:
+        return "'" + value.replace("'", "''") + "'"
+
+    options = ["READ_ONLY", "META_TYPE 'sqlite'"]
+    if data_path and "://" in data_path:
+        options += [f"DATA_PATH {quoted(data_path)}", "OVERRIDE_DATA_PATH true"]
+    return f"ATTACH {quoted('ducklake:' + working)} AS previous ({', '.join(options)})"
 
 
 PUBLISHED_SESSIONS = """
