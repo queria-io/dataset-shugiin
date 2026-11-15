@@ -1,6 +1,6 @@
 import unittest
 
-from pipelines.gian import body_text, document_kind, document_links, keika_fields, kanji, law_num, list_rows, sessions, sessions_to_fetch
+from pipelines.gian import attach_previous, body_text, document_kind, document_links, keika_fields, kanji, law_num, list_rows, sessions, sessions_to_fetch
 
 LIST = """
 <table><caption class="txt04b">閣法の一覧</caption>
@@ -106,6 +106,16 @@ class DocumentsTest(unittest.TestCase):
     def test_body_keeps_table_rows(self):
         table = '<H2 id="TopContents"></H2><table><tr><td><p>一級</p></td><td><p>205,300</p></td></tr><tr><td>二級</td><td>250,000</td></tr></table><div id="FooterBlock">'
         self.assertEqual(body_text(table), "一級\t205,300\n二級\t250,000")
+
+
+class AttachPreviousTest(unittest.TestCase):
+    def test_reads_data_files_from_storage(self):
+        sql = attach_previous("/w/work.sqlite", "s3://bucket/fdl/a/b/data/")
+        self.assertIn("DATA_PATH 's3://bucket/fdl/a/b/data/', OVERRIDE_DATA_PATH true", sql)
+
+    def test_keeps_catalog_data_path_for_local_folder(self):
+        self.assertNotIn("DATA_PATH", attach_previous("/w/it's.sqlite", "/w/data/"))
+        self.assertIn("'ducklake:/w/it''s.sqlite'", attach_previous("/w/it's.sqlite", None))
 
 
 if __name__ == "__main__":
