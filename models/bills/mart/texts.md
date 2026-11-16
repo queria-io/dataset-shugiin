@@ -1,5 +1,6 @@
-schema: bills
-name: texts
+---
+$schema: https://queria.io/schemas/table/v1.json
+table: bills.texts
 title: 議案の本文
 description: |-
   衆議院ホームページの「議案」に載っている議案の本文です。1 行が本文のページ 1 つで、提出時法律案・要綱・修正案・決議案があります。本文は衆議院ホームページの表記のまま、改行を残したテキストにしています。表（給与表など）はセルをタブで区切ります。
@@ -31,3 +32,4 @@ fields:
     title: 本文情報の一覧の URL
   - name: fetched_at
     title: 取得日時
+---

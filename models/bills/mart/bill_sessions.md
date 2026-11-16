@@ -1,5 +1,6 @@
-schema: bills
-name: bill_sessions
+---
+$schema: https://queria.io/schemas/table/v1.json
+table: bills.bill_sessions
 title: 議案の審議経過（国会回次ごと）
 description: |-
   衆議院ホームページの「議案」に載っている議案の審議経過です。1 行が、1 つの国会で審議した 1 件の議案です。第142回国会（1998 年）から収録しています。
@@ -103,3 +104,4 @@ fields:
     title: 本文情報の URL
   - name: fetched_at
     title: 取得日時
+---

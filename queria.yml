@@ -1,6 +1,4 @@
-# この dataset.yml は fdl commit が読む（FDL の dataset.json を YAML で書いたもの）。
-# 表の説明は models/ の *.table.yml に書く。表と列の型・NULL・行数は fdl commit がカタログから埋める。
-# Queria だけの項目（テーマ・カバー・列の意味）は annotations.queria に書く。
+$schema: https://queria.io/schemas/dataset/v1.json
 name: shugiin
 title: 衆議院
 description: |-
@@ -46,7 +44,5 @@ update_frequency: weekly
 schemas:
   - name: bills
     title: 議案
-annotations:
-  queria:
-    themes: [government_finance]
-    cover: 🏛️
+themes: [government_finance]
+cover: 🏛️
