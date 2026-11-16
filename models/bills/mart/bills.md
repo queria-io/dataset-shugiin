@@ -1,5 +1,6 @@
-schema: bills
-name: bills
+---
+$schema: https://queria.io/schemas/table/v1.json
+table: bills.bills
 title: 議案
 description: |-
   衆議院ホームページの「議案」に載っている議案の一覧です。1 行が 1 件の議案で、最後に審議した国会での経過を持ちます。第142回国会（1998 年）から収録しています。
@@ -68,3 +69,4 @@ fields:
     title: 経過情報の URL
   - name: honbun_url
     title: 本文情報の URL
+---

@@ -1,6 +1,4 @@
-# この dataset.yml は fdl commit が読む（FDL の dataset.json を YAML で書いたもの）。
-# 表の説明は models/ の *.table.yml に書く。表と列の型・NULL・行数は fdl commit がカタログから埋める。
-# Queria だけの項目（テーマ・カバー・列の意味）は annotations.queria に書く。
+$schema: https://queria.io/schemas/dataset/v1.json
 name: shugiin
 title: 衆議院
 description: |-
@@ -25,8 +23,6 @@ keywords:
   - 会派
 homepage: https://github.com/queria-io/dataset-shugiin
 language: ja
-# 標準の利用許諾は無い。衆議院ホームページの「リンク・著作権等について」に従う。
-# 議案の本文は手を加えずにテキストにする（ホームページの内容を無断で改変しない、という条件のため）
 licenses:
   - id: shugiin-copyright
     title: 衆議院ホームページ リンク・著作権等について
@@ -46,7 +42,5 @@ update_frequency: weekly
 schemas:
   - name: bills
     title: 議案
-annotations:
-  queria:
-    themes: [government_finance]
-    cover: 🏛️
+themes: [government_finance]
+cover: 🏛️
