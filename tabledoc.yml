@@ -36,11 +36,11 @@ licenses:
 sources:
   - id: menu
     title: 衆議院ホームページ 議案情報
-    path: https://www.shugiin.go.jp/internet/itdb_gian.nsf/html/gian/menu.htm
+    url: https://www.shugiin.go.jp/internet/itdb_gian.nsf/html/gian/menu.htm
 contributors:
   - id: shugiin
     title: 衆議院
-    path: https://www.shugiin.go.jp/
+    url: https://www.shugiin.go.jp/
     roles: [publisher]
 spatial_coverage: [JP]
 update_frequency: weekly
