@@ -1,6 +1,4 @@
----
-$schema: https://queria.io/schemas/table/v1.json
-table: bills.texts
+$schema: https://tabledoc.queria.io/schemas/table/v1.json
 title: 議案の本文
 description: |-
   衆議院ホームページの「議案」に載っている議案の本文です。1 行が本文のページ 1 つで、提出時法律案・要綱・修正案・決議案があります。本文は衆議院ホームページの表記のまま、改行を残したテキストにしています。表（給与表など）はセルをタブで区切ります。
@@ -9,9 +7,8 @@ description: |-
   - 提出時法律案は提出したときの本文です。修正されて成立した法律の条文は e_gov.laws.articles にあります
   - 本文情報が無い議案（予算・条約など）は入りません
 primary_key: [text_url, bill_type, submitted_session, bill_number]
-sources:
-  - path: https://www.shugiin.go.jp/internet/itdb_gian.nsf/html/gian/menu.htm
-fields:
+sources: [menu]
+columns:
   - name: bill_type
     title: 議案種類
   - name: submitted_session
@@ -32,4 +29,3 @@ fields:
     title: 本文情報の一覧の URL
   - name: fetched_at
     title: 取得日時
----

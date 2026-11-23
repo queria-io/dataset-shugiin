@@ -1,4 +1,4 @@
-$schema: https://queria.io/schemas/dataset/v1.json
+$schema: https://tabledoc.queria.io/schemas/dataset/v1.json
 name: shugiin
 title: 衆議院
 description: |-
@@ -9,7 +9,7 @@ description: |-
   成立した法律は法令番号（law_num）で e_gov.laws の法令と改正履歴と、審議した国会・委員会・日付で kokkai.minutes.meetings と結合できます。
 
   出典：衆議院ホームページ「議案」（https://www.shugiin.go.jp/internet/itdb_gian.nsf/html/gian/menu.htm）の議案の一覧・経過情報・本文情報から作成したものです。議案の本文は衆議院ホームページの表記のまま、改行を残したテキストにしています（表はセルをタブで区切ります）。
-keywords:
+topics:
   - 国会
   - 衆議院
   - 参議院
@@ -33,10 +33,12 @@ licenses:
     share_alike: false
     attribution_required: true
 sources:
-  - title: 衆議院ホームページ 議案情報
+  - id: menu
+    title: 衆議院ホームページ 議案情報
     path: https://www.shugiin.go.jp/internet/itdb_gian.nsf/html/gian/menu.htm
 contributors:
-  - title: 衆議院
+  - id: shugiin
+    title: 衆議院
     path: https://www.shugiin.go.jp/
     roles: [publisher]
 spatial_coverage: [JP]
@@ -44,5 +46,3 @@ update_frequency: weekly
 schemas:
   - name: bills
     title: 議案
-themes: [government_finance]
-cover: 🏛️

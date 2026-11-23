@@ -1,6 +1,4 @@
----
-$schema: https://queria.io/schemas/table/v1.json
-table: bills.bill_sessions
+$schema: https://tabledoc.queria.io/schemas/table/v1.json
 title: 議案の審議経過（国会回次ごと）
 description: |-
   衆議院ホームページの「議案」に載っている議案の審議経過です。1 行が、1 つの国会で審議した 1 件の議案です。第142回国会（1998 年）から収録しています。
@@ -10,9 +8,8 @@ description: |-
   - 委員会の名前は「委員会」を除いた書き方です（例 財務金融、政治改革に関する特別）。会議録 kokkai.minutes.meetings の meeting_name と結合するときは「委員会」を付けます
   - 表の中で空の項目は、衆議院ホームページで未登録か、情報が無いことが確定したものです
 primary_key: [session, keika_id]
-sources:
-  - path: https://www.shugiin.go.jp/internet/itdb_gian.nsf/html/gian/menu.htm
-fields:
+sources: [menu]
+columns:
   - name: session
     title: 国会回次
     description: この行の経過を審議した国会の回次
@@ -104,4 +101,3 @@ fields:
     title: 本文情報の URL
   - name: fetched_at
     title: 取得日時
----
