@@ -9,6 +9,7 @@ description: |-
   成立した法律は法令番号（law_num）で e_gov.laws の法令と改正履歴と、審議した国会・委員会・日付で kokkai.minutes.meetings と結合できます。
 
   出典：衆議院ホームページ「議案」（https://www.shugiin.go.jp/internet/itdb_gian.nsf/html/gian/menu.htm）の議案の一覧・経過情報・本文情報から作成したものです。議案の本文は衆議院ホームページの表記のまま、改行を残したテキストにしています（表はセルをタブで区切ります）。
+image: cover.png
 topics:
   - 国会
   - 衆議院
