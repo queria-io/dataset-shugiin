@@ -24,3 +24,6 @@ dist/
 
 # 取得した議案 (毎回取り直すのでコミットしない)
 data/
+
+# 共通のスクリプト (git clone https://github.com/queria-io/dataset-shared.git shared)
+shared/
