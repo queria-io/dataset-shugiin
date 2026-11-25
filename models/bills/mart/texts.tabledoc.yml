@@ -11,6 +11,7 @@ sources: [menu]
 columns:
   - name: bill_type
     title: 議案種類
+    dimension: categorical
   - name: submitted_session
     title: 提出回次
   - name: bill_number
@@ -18,6 +19,7 @@ columns:
   - name: document_kind
     title: 本文の種類
     description: 提出時法律案・要綱・修正案・決議案
+    dimension: categorical
   - name: document_title
     title: 本文の見出し
     description: 衆議院ホームページの本文情報の一覧の見出し（例 修正案2：第217回提出(可決)）。決議案は議案件名

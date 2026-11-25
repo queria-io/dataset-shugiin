@@ -12,6 +12,7 @@ columns:
   - name: bill_type
     title: 議案種類
     description: 衆法・参法・閣法・予算・条約・承認・決議・規則・規程・議決
+    dimension: categorical
   - name: submitted_session
     title: 提出回次
   - name: bill_number
@@ -23,6 +24,7 @@ columns:
   - name: status
     title: 審議状況
     description: 最後に審議した国会での審議状況（例 成立、未了、撤回、衆議院で閉会中審査）
+    dimension: categorical
   - name: submitter
     title: 議案提出者
   - name: submitter_groups
@@ -35,10 +37,12 @@ columns:
     title: 衆議院付託委員会
   - name: shu_committee_result
     title: 衆議院審査結果
+    dimension: categorical
   - name: shu_plenary_decided_date
     title: 衆議院審議終了年月日
   - name: shu_plenary_result
     title: 衆議院審議結果
+    dimension: categorical
   - name: shu_vote
     title: 衆議院審議時会派態度
   - name: shu_yes_groups
@@ -51,10 +55,12 @@ columns:
     title: 参議院付託委員会
   - name: san_committee_result
     title: 参議院審査結果
+    dimension: categorical
   - name: san_plenary_decided_date
     title: 参議院審議終了年月日
   - name: san_plenary_result
     title: 参議院審議結果
+    dimension: categorical
   - name: promulgated_date
     title: 公布年月日
   - name: law_number
